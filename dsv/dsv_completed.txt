@@ -1,0 +1,1583 @@
+DATA SCIENCE & VISUALIZATION — PROGRAMS FROM MASTER JOURNAL
+Code blocks are transcribed from the supplied PDF. Dataset files named in the programs must be available in the working directory.
+
+EXPERIMENT 1
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+pd.set_option("display.width", 85)
+print("Pandas version:", pd.__version__)
+print("NumPy version :", np.__version__)
+
+Program section 2:
+s = pd.Series([10, 20, 30, 40], index=["a", "b", "c", "d"])
+print("Series:")
+print(s)
+
+df = pd.DataFrame({"Name": ["Amit", "Priya", "Rahul", "Sneha"],
+                   "Age": [20, 21, 20, 22],
+                   "Marks": [85, 78, 92, 70]})
+print("\nDataFrame:")
+print(df)
+print("\nShape of DataFrame:", df.shape)
+
+print("\ndf.loc[1, 'Name'] ->", df.loc[1, "Name"])
+print("df.iloc[0:2, 0:2] ->")
+print(df.iloc[0:2, 0:2])
+print("\nStudents with Marks > 75:")
+print(df[df["Marks"] > 75])
+
+Program section 3:
+products = pd.DataFrame({
+    "Name":     ["Laptop", "Mouse", "Keyboard", "Monitor", "Printer", "Webcam"],
+    "Category": ["Computers", "Accessories", "Accessories", "Computers", "Office",
+"Accessories"],
+    "Price":    [55000, 500, 1200, 12000, 8500, 2500],
+    "Stock":    [5, 40, 25, 8, 12, 3]})
+print("All products:")
+print(products)
+
+low_stock = products[products["Stock"] < 10]
+print("\nProducts with Stock < 10:")
+print(low_stock)
+
+Program section 4:
+emp = pd.DataFrame({
+    "EmpID": [101, 102, 103, 104, 105, 106],
+    "Name":   ["Ravi", "Anita", "Karan", "Meera", "Suresh", "Neha"],
+    "Age":    [24, 31, 45, 29, 38, 52],
+    "Dept":   ["IT", "HR", "IT", "Finance", "Sales", "Finance"],
+    "Salary": [40000, 52000, 95000, 61000, 58000, 120000]})
+print(emp)
+
+idx = emp["Salary"].idxmax()
+print("\nIndex of maximum salary:", idx)
+print("Employee with maximum salary:")
+print(emp.loc[idx])
+
+Program section 5:
+students = pd.DataFrame({"RollNo": [1, 2, 3, 4, 5],
+                         "Name": ["Amit", "Priya", "Rahul", "Sneha", "Vikas"]})
+marks = pd.DataFrame({"RollNo": [2, 3, 4, 5, 6],
+                      "Marks": [78, 92, 70, 66, 88]})
+print("Students:")
+print(students)
+print("\nMarks:")
+print(marks)
+
+result = pd.merge(students, marks, on="RollNo", how="inner")
+print("\nInner join result:")
+print(result)
+
+
+                     Data Manipulation in Python using Pandas.
+
+Program section 6:
+emp["Experience_Level"] = np.where(emp["Age"] > 35, "Senior", "Junior")
+print(emp[["Name", "Age", "Experience_Level"]])
+
+Program section 7:
+sales = pd.DataFrame({
+    "Region": ["East", "West", "East", "North", "West", "North", "East", "South"],
+    "Sales": [250, 400, 150, 300, 200, 500, 350, 275]})
+print(sales)
+
+summary = sales.groupby("Region")["Sales"].agg(["sum", "count"])
+print("\nRegion-wise sum and count of Sales:")
+print(summary)
+
+
+                     Data Manipulation in Python using Pandas.
+
+Program section 8:
+print("Sorted by Salary (descending):")
+print(emp.sort_values(by="Salary", ascending=False)[["Name", "Salary"]])
+
+emp["Bonus"] = emp["Salary"] * 0.10
+emp = emp.rename(columns={"Salary": "Pay"})
+print("\nAfter adding Bonus and renaming Salary -> Pay:")
+print(emp[["Name", "Pay", "Bonus"]].head(3))
+emp = emp.drop(columns=["Bonus"])
+print("\nColumns after dropping Bonus:", list(emp.columns))
+
+d = pd.DataFrame({"A": [1, 2, 2, 3], "B": ["x", "y", "y", "z"]})
+print("\nDuplicated rows:", d.duplicated().sum())
+print(d.drop_duplicates())
+
+print("\nconcat of two DataFrames:")
+print(pd.concat([d.head(2), d.tail(2)], ignore_index=True))
+
+
+EXPERIMENT 2
+========================================
+
+Program section 1:
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
+pd.set_option("display.width", 85)
+
+def analyse(data, xcol, ycol, xlabel, ylabel, title):
+    y = data[ycol]
+    print("Statistics of", ylabel)
+    print("Mean               :", round(y.mean(), 2))
+    print("Median             :", round(y.median(), 2))
+    print("Variance (sample) :", round(y.var(), 2))
+    print("Standard deviation :", round(y.std(), 2))
+    r = data[xcol].corr(y)
+    print("Correlation (%s vs %s): %.4f" % (xlabel, ylabel, r))
+
+     fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
+     ax[0].scatter(data[xcol], y, color="steelblue", edgecolor="black")
+     m, c = np.polyfit(data[xcol], y, 1)
+     ax[0].plot(data[xcol], m * data[xcol] + c, color="red")
+     ax[0].set_xlabel(xlabel); ax[0].set_ylabel(ylabel)
+     ax[0].set_title("Scatter plot: %s vs %s" % (xlabel, ylabel))
+     ax[1].hist(y, bins=8, density=True, color="lightgray", edgecolor="black")
+     xs = np.linspace(y.min(), y.max(), 200)
+     ax[1].plot(xs, stats.norm.pdf(xs, y.mean(), y.std()), color="red", linewidth=2)
+     ax[1].set_xlabel(ylabel); ax[1].set_ylabel("Density")
+     ax[1].set_title("Histogram with normal curve")
+     fig.suptitle(title)
+     plt.tight_layout()
+     plt.show()
+     return r
+
+def interpret(r, y, xname):
+    if abs(r) >= 0.7: s = "strong"
+    elif abs(r) >= 0.4: s = "moderate"
+    else: s = "weak"
+    d = "positive" if r > 0 else "negative"
+    print("Interpretation:")
+    print(" - Correlation r = %.2f, a %s %s relationship with %s." % (r, s, d, xname))
+    print(" - Skewness of data = %.2f (%s)." % (stats.skew(y),
+          "approximately symmetric" if abs(stats.skew(y)) < 0.5 else "skewed"))
+
+
+PROBLEM             Calculating Mean, Median, variance and plotting Correlation and Normal Distribution of a
+STATEMENT           data using Python.
+
+
+     print(" - Mean %.2f vs median %.2f." % (y.mean(), y.median()))
+
+Problem 1: Academic performance of 30 students
+Code:
+np.random.seed(7)
+hours = np.round(np.random.uniform(1, 9, 30), 1)
+attendance = np.clip(np.round(55 + 4.5 * hours + np.random.normal(0, 6, 30)), 40, 100)
+marks = np.clip(np.round(28 + 5.5 * hours + 0.25 * (attendance - 75) + np.random.normal(0,
+6, 30)), 0, 100)
+students = pd.DataFrame({"StudyHours": hours, "Attendance": attendance, "Marks": marks})
+print(students.head(10))
+print("\nShape:", students.shape)
+print()
+r1 = analyse(students, "StudyHours", "Marks", "Study hours", "Marks", "Academic performance
+of 30 students")
+print()
+interpret(r1, students["Marks"], "study hours")
+print("\nCorrelation matrix:")
+print(students.corr().round(3))
+sns.heatmap(students.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Correlation heatmap - student data")
+plt.show()
+
+Program section 2:
+np.random.seed(7)
+hours = np.round(np.random.uniform(1, 9, 30), 1)
+attendance = np.clip(np.round(55 + 4.5 * hours + np.random.normal(0, 6, 30)), 40, 100)
+marks = np.clip(np.round(28 + 5.5 * hours + 0.25 * (attendance - 75) + np.random.normal(0,
+6, 30)), 0, 100)
+students = pd.DataFrame({"StudyHours": hours, "Attendance": attendance, "Marks": marks})
+print(students.head(10))
+print("\nShape:", students.shape)
+print()
+r1 = analyse(students, "StudyHours", "Marks", "Study hours", "Marks", "Academic performance
+of 30 students")
+print()
+interpret(r1, students["Marks"], "study hours")
+print("\nCorrelation matrix:")
+print(students.corr().round(3))
+sns.heatmap(students.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Correlation heatmap - student data")
+plt.show()
+
+Program section 3:
+np.random.seed(11)
+exp = np.round(np.random.uniform(0.5, 20, 30), 1)
+salary = np.round(22000 + 3300 * exp + np.random.normal(0, 9000, 30), -2)
+emp = pd.DataFrame({"Experience": exp, "Salary": salary})
+print(emp.head(10))
+print("\nShape:", emp.shape)
+print()
+r2 = analyse(emp, "Experience", "Salary", "Experience (years)", "Monthly salary (Rs.)",
+"Salary and experience of employees")
+print()
+interpret(r2, emp["Salary"], "experience")
+print("Experience has a strong relationship with salary:", abs(r2) >= 0.7)
+
+Program section 4:
+house = pd.read_csv("Housing.csv")
+print("Shape:", house.shape)
+print(house[["price", "area", "bedrooms"]].head())
+print()
+r3 = analyse(house, "area", "price", "Carpet area (sq. ft.)", "Price (Rs.)", "Housing.csv:
+area vs price")
+print()
+interpret(r3, house["price"], "carpet area")
+print(" - Larger houses tend to have higher prices:", r3 > 0.4)
+
+
+PROBLEM             Calculating Mean, Median, variance and plotting Correlation and Normal Distribution of a
+STATEMENT           data using Python.
+
+
+print(" - Prices approximately normal:", abs(stats.skew(house["price"])) < 0.5)
+
+Program section 5:
+num = house[["price", "area", "bedrooms", "bathrooms", "stories", "parking"]]
+print(num.corr().round(3))
+plt.figure(figsize=(6, 4.5))
+
+
+PROBLEM                 Calculating Mean, Median, variance and plotting Correlation and Normal Distribution of a
+STATEMENT               data using Python.
+
+
+sns.heatmap(num.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Correlation heatmap - Housing.csv")
+plt.show()
+
+Program section 6:
+p = house["price"]
+mu, sd = p.mean(), p.std()
+for k in (1, 2, 3):
+    pct = ((p > mu - k * sd) & (p < mu + k * sd)).mean() * 100
+    print("Within %d std. deviation(s): %.1f %%" % (k, pct))
+
+
+PROBLEM             Calculating Mean, Median, variance and plotting Correlation and Normal Distribution of a
+STATEMENT           data using Python.
+
+
+print("(For an exact normal curve these would be 68%, 95% and 99.7%)")
+
+
+EXPERIMENT 3
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+pd.set_option("display.width", 85)
+pd.set_option("display.max_columns", 20)
+
+df = pd.read_csv("Heart.csv")
+print("First 5 records:")
+print(df.head())
+print("\nLast 3 records:")
+print(df.tail(3))
+print("\nColumn names:")
+print(list(df.columns))
+
+Program section 2:
+print("Shape of data (rows, columns):", df.shape)
+print("Number of rows   :", df.shape[0])
+print("Number of columns:", df.shape[1])
+
+Program section 3:
+print(df.isnull().sum())
+print("\nTotal missing values:", df.isnull().sum().sum())
+
+Program section 4:
+print(df.dtypes)
+print()
+df.info()
+
+Program section 5:
+print((df == 0).sum())
+
+Program section 6:
+print("Mean age of patients:", round(df["Age"].mean(), 2))
+print("Minimum age:", df["Age"].min(), " Maximum age:", df["Age"].max())
+
+Program section 7:
+from sklearn.model_selection import train_test_split
+subset = df[["Age", "Sex", "ChestPain", "RestBP", "Chol"]]
+print(subset.head())
+print("Shape of subset:", subset.shape)
+
+train, test = train_test_split(subset, test_size=0.25, random_state=0)
+print("\nTraining set shape:", train.shape)
+print("Testing set shape :", test.shape)
+print("\nFirst 5 rows of training data:")
+print(train.head())
+
+Program section 8:
+train.to_csv("heart_train.csv", index=False)
+test.to_csv("heart_test.csv", index=False)
+print("Files heart_train.csv and heart_test.csv created")
+print(pd.read_csv("heart_train.csv").shape)
+
+print("\nStatistical summary:")
+print(df[["Age", "RestBP", "Chol", "MaxHR", "Oldpeak"]].describe().round(2))
+
+print("\nCorrelation matrix:")
+print(df[["Age", "RestBP", "Chol", "MaxHR", "Oldpeak"]].corr().round(3))
+
+Program section 9:
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score,
+f1_score
+TP = 45
+FP = 100 - 45
+FN = 50 - 45
+TN = 500 - TP - FP - FN
+
+
+                 Importing and exporting CSV files using Pandas in Python and analyzing data (shape,
+STATEMENT           display of data in CSV file, checking missing values and correlation) in CSV files.
+
+y_true = [1] * TP + [0] * FP + [1] * FN + [0] * TN
+y_pred = [1] * TP + [1] * FP + [0] * FN + [0] * TN
+
+print("TP =", TP, " FP =", FP, " FN =", FN, " TN =", TN)
+cm = confusion_matrix(y_true, y_pred, labels=[1, 0])
+print("\nConfusion matrix (rows = actual, columns = predicted)")
+print(pd.DataFrame(cm, index=["Actual +ve", "Actual -ve"], columns=["Pred +ve", "Pred -
+ve"]))
+print("\nAccuracy :", accuracy_score(y_true, y_pred))
+print("Precision :", precision_score(y_true, y_pred))
+print("Recall    :", recall_score(y_true, y_pred))
+print("F1-score :", round(f1_score(y_true, y_pred), 4))
+
+Program section 10:
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+X = df[["Age"]]
+y = df["MaxHR"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+print("Intercept   :", round(model.intercept_, 3))
+print("Coefficient :", round(model.coef_[0], 3))
+print("MSE :", round(mean_squared_error(y_test, y_pred), 3))
+print("MAE :", round(mean_absolute_error(y_test, y_pred), 3))
+print("R2 :", round(r2_score(y_test, y_pred), 3))
+
+plt.scatter(X_test, y_test, color="steelblue", label="Actual")
+plt.plot(X_test.sort_values("Age"), model.predict(X_test.sort_values("Age")), color="red",
+label="Regression line")
+plt.xlabel("Age"); plt.ylabel("MaxHR"); plt.title("Simple linear regression: Age vs MaxHR")
+
+
+                 Importing and exporting CSV files using Pandas in Python and analyzing data (shape,
+STATEMENT           display of data in CSV file, checking missing values and correlation) in CSV files.
+
+plt.legend()
+plt.show()
+
+
+EXPERIMENT 4
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+pd.set_option("display.width", 85)
+pd.set_option("display.max_columns", 20)
+
+house = pd.read_csv("Housing.csv")
+print("Housing.csv shape:", house.shape)
+print(house.head())
+print("\nColumns:", list(house.columns))
+
+tesla = pd.read_csv("tesla_data.csv")
+tesla["Date"] = pd.to_datetime(tesla["Date"])
+print("\ntesla_data.csv shape:", tesla.shape)
+print(tesla[["Date", "Open", "High", "Low", "Close", "Volume"]].head())
+
+Program section 2:
+plt.figure(figsize=(8, 3.8))
+plt.plot(tesla["Date"], tesla["Close"], color="blue", linewidth=1.5, label="Close price")
+plt.title("Line plot: Tesla closing price trend")
+plt.xlabel("Date")
+plt.ylabel("Closing price (USD)")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+Program section 3:
+avg = house.groupby("furnishingstatus")["price"].mean()
+print(avg.round(0))
+plt.figure(figsize=(6, 3.8))
+plt.bar(avg.index, avg.values, color=["green", "orange", "steelblue"], edgecolor="black")
+plt.title("Bar plot: average house price by furnishing status")
+plt.xlabel("Furnishing status")
+plt.ylabel("Average price (Rs.)")
+
+
+PROBLEM             Importing dataset (CSV file) and Python program to demonstrate the various plots using
+STATEMENT           Matplotlib library on dataset.
+
+
+plt.show()
+
+Program section 4:
+counts = house["stories"].value_counts().sort_index()
+print(counts)
+plt.figure(figsize=(5, 4))
+plt.pie(counts.values, labels=[str(s) + " storey" for s in counts.index],
+        autopct="%1.1f%%", startangle=90, wedgeprops={"edgecolor": "white"})
+plt.title("Pie chart: houses by number of stories")
+plt.show()
+
+Program section 5:
+plt.figure(figsize=(6.5, 3.8))
+plt.hist(house["price"], bins=15, color="skyblue", edgecolor="black")
+plt.title("Histogram: distribution of house prices")
+plt.xlabel("Price (Rs.)")
+plt.ylabel("Frequency")
+plt.show()
+print("Mean price :", round(house["price"].mean()))
+print("Median price:", round(house["price"].median()))
+
+
+PROBLEM              Importing dataset (CSV file) and Python program to demonstrate the various plots using
+STATEMENT            Matplotlib library on dataset.
+
+Program section 6:
+plt.figure(figsize=(6.5, 3.8))
+plt.scatter(house["area"], house["price"], color="m", marker="*", s=25, label="Houses")
+plt.title("Scatter plot: area vs price")
+plt.xlabel("Area (sq. ft.)")
+plt.ylabel("Price (Rs.)")
+plt.legend()
+plt.show()
+print("Correlation between area and price:", round(house["area"].corr(house["price"]), 3))
+
+
+PROBLEM             Importing dataset (CSV file) and Python program to demonstrate the various plots using
+STATEMENT           Matplotlib library on dataset.
+
+Program section 7:
+fig, ax = plt.subplots(2, 2, figsize=(10, 7))
+ax[0, 0].plot(tesla["Date"], tesla["Volume"], color="green")
+ax[0, 0].set_title("Line: Tesla trading volume")
+ax[0, 0].tick_params(axis="x", rotation=30)
+
+bed = house["bedrooms"].value_counts().sort_index()
+ax[0, 1].bar(bed.index, bed.values, color="orange", edgecolor="black")
+ax[0, 1].set_title("Bar: number of houses by bedrooms")
+ax[0, 1].set_xlabel("Bedrooms")
+
+ax[1, 0].hist(house["area"], bins=12, color="salmon", edgecolor="black")
+ax[1, 0].set_title("Histogram: area")
+ax[1, 0].set_xlabel("Area (sq. ft.)")
+
+house.boxplot(column="price", by="furnishingstatus", ax=ax[1, 1])
+ax[1, 1].set_title("Box plot: price by furnishing status")
+ax[1, 1].set_xlabel("")
+
+
+PROBLEM             Importing dataset (CSV file) and Python program to demonstrate the various plots using
+STATEMENT           Matplotlib library on dataset.
+
+
+plt.suptitle("Various plots using Matplotlib")
+plt.tight_layout()
+plt.savefig("subplots.png", dpi=150)
+plt.show()
+print("Figure saved as subplots.png")
+
+
+EXPERIMENT 5
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+pd.set_option("display.width", 85)
+pd.set_option("display.max_columns", 20)
+
+df = pd.read_csv("tesla_data.csv")
+df["Date"] = pd.to_datetime(df["Date"])
+df = df[["Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
+print("Shape:", df.shape)
+print(df.head())
+print("\nPeriod:", df["Date"].min().date(), "to", df["Date"].max().date())
+print("\nMissing values:")
+print(df.isnull().sum())
+print("\nStatistical summary:")
+print(df.drop(columns="Date").describe().round(2))
+print("\nClose equals Adj Close in all rows:", (df["Close"] == df["Adj Close"]).all())
+df = df.drop(columns=["Adj Close"])
+
+Program section 2:
+hi = df.loc[df["Close"].idxmax()]
+lo = df.loc[df["Close"].idxmin()]
+print("Highest closing price: %.2f on %s" % (hi["Close"], hi["Date"].date()))
+print("Lowest closing price : %.2f on %s" % (lo["Close"], lo["Date"].date()))
+
+Program section 3:
+df["Daily_Change_%"] = df["Close"].pct_change() * 100
+print(df[["Date", "Close", "Daily_Change_%"]].head(6))
+
+top10 = df.nlargest(10, "Daily_Change_%")[["Date", "Close", "Daily_Change_%"]]
+print("\nTop 10 days with highest daily gain:")
+print(top10.to_string(index=False))
+
+Program section 4:
+df["MA20"] = df["Close"].rolling(window=20).mean()
+plt.figure(figsize=(8.5, 4))
+plt.plot(df["Date"], df["Close"], label="Close", color="blue")
+plt.plot(df["Date"], df["MA20"], label="20-day moving average", color="red")
+plt.title("Tesla (TSLA) closing price trend")
+plt.xlabel("Date"); plt.ylabel("Price (USD)")
+plt.legend(); plt.grid(True)
+plt.show()
+print("Mean daily return : %.4f %%" % df["Daily_Change_%"].mean())
+print("Std. deviation    : %.4f %%" % df["Daily_Change_%"].std())
+
+Program section 5:
+big = pd.read_csv("stock_market_data_large.csv")
+big["Date"] = pd.to_datetime(big["Date"])
+print("stock_market_data_large.csv shape:", big.shape)
+print(big.head(3))
+
+t = pd.read_csv("tesla_data.csv", parse_dates=["Date"])[["Date", "Open", "High", "Low",
+"Close", "Volume"]]
+t["Symbol"] = "TSLA"
+b = big[(big["Date"] >= t["Date"].min()) & (big["Date"] <= t["Date"].max())][["Date",
+"Open", "High", "Low", "Close", "Volume"]].copy()
+b["Symbol"] = "STOCK2"
+stocks = pd.concat([t, b], ignore_index=True)
+print("\nCombined dataset shape:", stocks.shape)
+print(stocks.groupby("Symbol")["Close"].count())
+
+Program section 6:
+stocks = stocks.sort_values(["Symbol", "Date"])
+
+stocks["Return"] = stocks.groupby("Symbol")["Close"].pct_change()
+print(stocks[["Date", "Symbol", "Close", "Return"]].head(4))
+
+summary = stocks.groupby("Symbol")["Return"].agg(["mean", "std"])
+print("\nMean and standard deviation of daily returns:")
+print(summary.round(5))
+
+summary["Rank"] = summary["mean"].rank(ascending=False).astype(int)
+print("\nRanking by average return:")
+print(summary.sort_values("Rank").round(5))
+
+
+PROBLEM             Stock market analysis using Python Pandas with suitable dataset.
+
+
+print("\nMost volatile stock:", summary["std"].idxmax())
+
+Program section 7:
+stocks["MA20"] = stocks.groupby("Symbol")["Close"].transform(lambda s: s.rolling(20).mean())
+print(stocks[stocks["Symbol"] == "TSLA"][["Date", "Close", "MA20"]].iloc[18:23])
+
+ret = stocks.pivot(index="Date", columns="Symbol", values="Return")
+print("\nCorrelation matrix of daily returns:")
+print(ret.corr().round(4))
+
+cl = stocks.pivot(index="Date", columns="Symbol", values="Close")
+cl.plot(figsize=(8.5, 4), title="Comparison of closing prices")
+plt.ylabel("Closing price"); plt.grid(True)
+plt.show()
+
+Program section 8:
+print("Maximum closing price of each company:")
+print(stocks.groupby("Symbol")["Close"].max().round(2))
+print("\nAverage trading volume of each company:")
+print(stocks.groupby("Symbol")["Volume"].mean().round(0))
+avg_close = stocks.groupby("Symbol")["Close"].mean()
+print("\nAverage closing price:")
+print(avg_close.round(2))
+print("Company with highest average closing price:", avg_close.idxmax())
+
+print("\nRecords sorted by closing price (descending), top 5:")
+print(stocks.sort_values("Close", ascending=False)[["Date", "Symbol",
+"Close"]].head(5).to_string(index=False))
+
+
+EXPERIMENT 6
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+pd.set_option("display.width", 85)
+pd.set_option("display.max_columns", 20)
+sns.set_style("whitegrid")
+
+df = pd.read_csv("Titanic-Dataset.csv")
+print("Shape of dataset:", df.shape)
+print(df.drop(columns=["Name", "Ticket"]).head())
+print()
+df.info()
+
+Program section 2:
+print("Statistical summary (numerical columns):")
+print(df[["Survived", "Pclass", "Age", "SibSp", "Parch", "Fare"]].describe().round(2))
+
+print("\nMissing values:")
+miss = df.isnull().sum()
+print(miss[miss > 0])
+print("\nPercentage of missing values:")
+print((miss[miss > 0] / len(df) * 100).round(2))
+print("\nDuplicate rows:", df.duplicated().sum())
+
+Program section 3:
+fig, ax = plt.subplots(1, 3, figsize=(10, 3.5))
+sns.countplot(x="Survived", data=df, ax=ax[0])
+ax[0].set_title("Survival status (0 = No, 1 = Yes)")
+sns.countplot(x="Sex", data=df, ax=ax[1])
+ax[1].set_title("Gender")
+sns.countplot(x="Pclass", data=df, ax=ax[2])
+ax[2].set_title("Passenger class")
+plt.tight_layout()
+plt.show()
+print(df["Survived"].value_counts())
+print("\nSurvival rate: %.1f %%" % (df["Survived"].mean() * 100))
+print(df["Sex"].value_counts())
+print(df["Pclass"].value_counts().sort_index())
+
+Program section 4:
+fig, ax = plt.subplots(1, 2, figsize=(10, 3.5))
+sns.histplot(df["Age"].dropna(), bins=25, kde=True, ax=ax[0])
+ax[0].set_title("Distribution of Age")
+sns.histplot(df["Fare"], bins=30, kde=True, ax=ax[1])
+ax[1].set_title("Distribution of Fare")
+plt.tight_layout()
+plt.show()
+print("Skewness of Age :", round(df["Age"].skew(), 3))
+print("Skewness of Fare:", round(df["Fare"].skew(), 3))
+
+Program section 5:
+fig, ax = plt.subplots(1, 3, figsize=(10.5, 3.6))
+sns.countplot(x="Sex", hue="Survived", data=df, ax=ax[0])
+ax[0].set_title("Survival by gender")
+sns.countplot(x="Pclass", hue="Survived", data=df, ax=ax[1])
+ax[1].set_title("Survival by class")
+sns.countplot(x="Embarked", hue="Survived", data=df, ax=ax[2])
+ax[2].set_title("Survival by port")
+plt.tight_layout()
+plt.show()
+print("Survival rate by gender (%):")
+print((df.groupby("Sex")["Survived"].mean() * 100).round(2))
+print("\nSurvival rate by passenger class (%):")
+print((df.groupby("Pclass")["Survived"].mean() * 100).round(2))
+
+
+PROBLEM             Titanic Dataset Exploratory Data Analysis (EDA) using Seaborn.
+
+Program section 6:
+fig, ax = plt.subplots(1, 3, figsize=(10.5, 3.6))
+sns.histplot(data=df, x="Age", hue="Survived", kde=True, bins=25, ax=ax[0])
+ax[0].set_title("Age vs survival")
+sns.boxplot(x="Survived", y="Age", data=df, ax=ax[1])
+ax[1].set_title("Age by survival")
+sns.boxplot(x="Pclass", y="Fare", data=df, ax=ax[2])
+ax[2].set_title("Fare by class")
+plt.tight_layout()
+plt.show()
+print("Average age of survivors     : %.2f" % df[df["Survived"] == 1]["Age"].mean())
+print("Average age of non-survivors : %.2f" % df[df["Survived"] == 0]["Age"].mean())
+print("\nAverage fare by class:")
+print(df.groupby("Pclass")["Fare"].mean().round(2))
+
+
+PROBLEM             Titanic Dataset Exploratory Data Analysis (EDA) using Seaborn.
+
+Program section 7:
+for col in ["Age", "Fare"]:
+    q1, q3 = df[col].quantile(0.25), df[col].quantile(0.75)
+    iqr = q3 - q1
+    low, high = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+    n = ((df[col] < low) | (df[col] > high)).sum()
+    print("%s: Q1=%.2f Q3=%.2f IQR=%.2f limits=(%.2f, %.2f)       outliers=%d" % (col, q1, q3,
+iqr, low, high, n))
+
+plt.figure(figsize=(7, 3))
+sns.boxplot(data=df[["Age", "Fare"]], orient="h")
+plt.title("Box plot to show outliers")
+plt.show()
+
+Program section 8:
+plt.figure(figsize=(8, 3.5))
+sns.heatmap(df.isnull(), cbar=False, yticklabels=False, cmap="viridis")
+plt.title("Missing values (yellow = missing)")
+plt.show()
+
+
+PROBLEM             Titanic Dataset Exploratory Data Analysis (EDA) using Seaborn.
+
+Program section 9:
+d2 = df.copy()
+d2["Sex_code"] = d2["Sex"].map({"male": 0, "female": 1})
+corr = d2[["Survived", "Pclass", "Sex_code", "Age", "SibSp", "Parch", "Fare"]].corr()
+print(corr.round(3))
+plt.figure(figsize=(6.5, 5))
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm")
+plt.title("Correlation heatmap - Titanic dataset")
+plt.show()
+
+Program section 10:
+print("Five significant observations:")
+f = df[df["Sex"] == "female"]["Survived"].mean() * 100
+m = df[df["Sex"] == "male"]["Survived"].mean() * 100
+print("1. Gender: %.1f %% of females survived against only %.1f %% of males." % (f, m))
+c = df.groupby("Pclass")["Survived"].mean() * 100
+print("2. Class: survival was %.1f %% in 1st class, %.1f %% in 2nd and %.1f %% in 3rd
+class." % (c[1], c[2], c[3]))
+print("3. Age: %.1f %% of Age values are missing; median age is %.0f years." %
+(df["Age"].isnull().mean() * 100, df["Age"].median()))
+print("4. Fare is highly right-skewed (skew = %.2f) with %d outliers; 1st class paid the
+highest fares." % (df["Fare"].skew(), (df["Fare"] > df["Fare"].quantile(0.75) + 1.5 *
+(df["Fare"].quantile(0.75) - df["Fare"].quantile(0.25))).sum()))
+
+
+PROBLEM             Titanic Dataset Exploratory Data Analysis (EDA) using Seaborn.
+
+
+print("5. Correlation: Survived vs Pclass = %.2f, Survived vs Fare = %.2f, Survived vs Sex =
+%.2f." % (corr.loc["Survived", "Pclass"], corr.loc["Survived", "Fare"], corr.loc["Survived",
+"Sex_code"]))
+print("   Cabin is missing for %.1f %% of passengers." % (df["Cabin"].isnull().mean() *
+100))
+
+
+EXPERIMENT 7
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+pd.set_option("display.width", 85)
+
+df = pd.read_csv("Titanic-Dataset.csv")
+data = df[["Survived", "Pclass", "Sex", "Age"]].copy()
+print("Shape:", data.shape)
+print(data.head())
+print("\nMissing values before cleaning:")
+print(data.isnull().sum())
+
+data["Age"] = data["Age"].fillna(data["Age"].median())
+data["Sex"] = data["Sex"].map({"male": 0, "female": 1})
+print("\nMissing values after cleaning:")
+print(data.isnull().sum())
+print("\nPreprocessed data:")
+print(data.head())
+
+Program section 2:
+from sklearn.model_selection import train_test_split
+X = data[["Sex", "Age", "Pclass"]]
+y = data["Survived"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+print("Training set :", X_train.shape, y_train.shape)
+print("Testing set :", X_test.shape, y_test.shape)
+print("\nSurvival ratio in training set:", round(y_train.mean(), 3))
+print("Survival ratio in testing set :", round(y_test.mean(), 3))
+
+Program section 3:
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+lr = LogisticRegression(max_iter=1000)
+lr.fit(X_train, y_train)
+y_pred_lr = lr.predict(X_test)
+
+print("Coefficients (Sex, Age, Pclass):", lr.coef_.round(4))
+print("Intercept:", lr.intercept_.round(4))
+print("\nAccuracy:", round(accuracy_score(y_test, y_pred_lr), 4))
+print("\nConfusion matrix:")
+print(confusion_matrix(y_test, y_pred_lr))
+print("\nClassification report:")
+print(classification_report(y_test, y_pred_lr, target_names=["Not survived", "Survived"]))
+
+Program section 4:
+new = pd.DataFrame({"Sex": [1], "Age": [28], "Pclass": [1]})
+prob = lr.predict_proba(new)
+print("Probability [not survived, survived]:", prob.round(4))
+print("Predicted class:", lr.predict(new)[0])
+print("Survival probability of female, age 28, 1st class: %.2f %%" % (prob[0][1] * 100))
+
+new2 = pd.DataFrame({"Sex": [0], "Age": [40], "Pclass": [3]})
+print("Survival probability of male, age 40, 3rd class : %.2f %%" % (lr.predict_proba(new2)
+[0][1] * 100))
+
+Program section 5:
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+dt = DecisionTreeClassifier(max_depth=3, random_state=42)
+dt.fit(X_train, y_train)
+y_pred_dt = dt.predict(X_test)
+
+print("Accuracy:", round(accuracy_score(y_test, y_pred_dt), 4))
+print("\nConfusion matrix:")
+print(confusion_matrix(y_test, y_pred_dt))
+print("\nClassification report:")
+print(classification_report(y_test, y_pred_dt, target_names=["Not survived", "Survived"]))
+print("Feature importances:")
+for f, i in zip(X.columns, dt.feature_importances_):
+    print(" %-7s %.4f" % (f, i))
+
+
+PROBLEM             Build training and testing dataset Titanic predict the probability of a survival of a person
+STATEMENT           based on gender, age and passenger-class.
+
+Program section 6:
+plt.figure(figsize=(11, 5))
+plot_tree(dt, feature_names=list(X.columns), class_names=["Not survived", "Survived"],
+filled=True, fontsize=8)
+plt.title("Decision tree (max_depth = 3)")
+plt.show()
+
+prob_dt = dt.predict_proba(new)
+print("Probability [not survived, survived]:", prob_dt.round(4))
+print("Survival probability of female, age 28, 1st class: %.2f %%" % (prob_dt[0][1] * 100))
+
+
+PROBLEM             Build training and testing dataset Titanic predict the probability of a survival of a person
+STATEMENT           based on gender, age and passenger-class.
+
+Program section 7:
+fig, ax = plt.subplots(1, 2, figsize=(9, 3.6))
+for a, pred, name in zip(ax, [y_pred_lr, y_pred_dt], ["Logistic Regression", "Decision
+Tree"]):
+    sns.heatmap(confusion_matrix(y_test, pred), annot=True, fmt="d", cmap="Blues",
+cbar=False, ax=a,
+                xticklabels=["Not survived", "Survived"], yticklabels=["Not survived",
+"Survived"])
+    a.set_title(name); a.set_xlabel("Predicted"); a.set_ylabel("Actual")
+plt.tight_layout()
+plt.show()
+
+print("Model comparison:")
+print("Logistic Regression accuracy:", round(accuracy_score(y_test, y_pred_lr), 4))
+print("Decision Tree accuracy      :", round(accuracy_score(y_test, y_pred_dt), 4))
+
+
+PROBLEM             Build training and testing dataset Titanic predict the probability of a survival of a person
+STATEMENT           based on gender, age and passenger-class.
+
+
+EXPERIMENT 8
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+pd.set_option("display.width", 85)
+pd.set_option("display.max_columns", 20)
+
+df = pd.read_csv("Housing.csv")
+print("Shape:", df.shape)
+print(df[["price", "area", "bedrooms", "bathrooms", "stories", "parking"]].head())
+print("\nMissing values:", df.isnull().sum().sum())
+print("\nCorrelation of price with other numerical columns:")
+print(df[["price", "area", "bedrooms", "bathrooms", "stories", "parking"]].corr()
+["price"].round(3))
+
+Program section 2:
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+X = df[["area"]]
+y = df["price"]
+
+
+PROBLEM             Implementation of Simple and Multiple Linear Regression With scikit-learn in Python
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+slr = LinearRegression()
+slr.fit(X_train, y_train)
+y_pred = slr.predict(X_test)
+
+print("Intercept (b0):", round(slr.intercept_, 2))
+print("Slope (b1)    :", round(slr.coef_[0], 2))
+print("Equation      : price = %.2f + %.2f x area" % (slr.intercept_, slr.coef_[0]))
+print("\nMAE :", round(mean_absolute_error(y_test, y_pred), 2))
+print("RMSE :", round(np.sqrt(mean_squared_error(y_test, y_pred)), 2))
+print("R2   :", round(r2_score(y_test, y_pred), 4))
+
+Program section 3:
+plt.figure(figsize=(6.5, 4))
+plt.scatter(X_test, y_test, color="steelblue", label="Actual")
+xs = np.linspace(X["area"].min(), X["area"].max(), 100).reshape(-1, 1)
+plt.plot(xs, slr.predict(pd.DataFrame(xs, columns=["area"])), color="red", linewidth=2,
+label="Regression line")
+plt.xlabel("Area (sq. ft.)"); plt.ylabel("Price (Rs.)")
+plt.title("Simple Linear Regression: area vs price")
+plt.legend()
+plt.show()
+
+new = pd.DataFrame({"area": [5000]})
+print("Predicted price for a house of 5000 sq. ft.: Rs. %.0f" % slr.predict(new)[0])
+
+
+PROBLEM             Implementation of Simple and Multiple Linear Regression With scikit-learn in Python
+
+Program section 4:
+features = ["area", "bedrooms", "bathrooms", "stories", "parking"]
+X = df[features]
+y = df["price"]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+mlr = LinearRegression()
+mlr.fit(X_train, y_train)
+y_pred = mlr.predict(X_test)
+
+print("Intercept:", round(mlr.intercept_, 2))
+print("\nCoefficients:")
+for f, c in zip(features, mlr.coef_):
+    print(" %-10s %12.2f" % (f, c))
+
+print("\nMAE :", round(mean_absolute_error(y_test, y_pred), 2))
+print("RMSE :", round(np.sqrt(mean_squared_error(y_test, y_pred)), 2))
+
+
+PROBLEM                Implementation of Simple and Multiple Linear Regression With scikit-learn in Python
+
+
+print("R2        :", round(r2_score(y_test, y_pred), 4))
+
+Program section 5:
+plt.figure(figsize=(5.5, 4.5))
+plt.scatter(y_test, y_pred, color="green", edgecolor="black")
+lim = [y_test.min(), y_test.max()]
+plt.plot(lim, lim, "r--", label="Perfect prediction")
+plt.xlabel("Actual price"); plt.ylabel("Predicted price")
+plt.title("Multiple Linear Regression: actual vs predicted")
+plt.legend()
+plt.show()
+
+print("Interpretation of coefficients:")
+for f, c in zip(features, mlr.coef_):
+    print(" - One unit increase in %s changes the price by about Rs. %.0f (other variables
+constant)." % (f, c))
+
+new = pd.DataFrame({"area": [6000], "bedrooms": [3], "bathrooms": [2], "stories": [2],
+"parking": [1]})
+print("\nPredicted price for 6000 sq.ft, 3 bed, 2 bath, 2 stories, 1 parking: Rs. %.0f" %
+mlr.predict(new)[0])
+
+
+PROBLEM             Implementation of Simple and Multiple Linear Regression With scikit-learn in Python
+
+
+EXPERIMENT 9
+========================================
+
+Program section 1:
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+pd.set_option("display.width", 85)
+sns.set_style("whitegrid")
+
+df = pd.read_csv("Mall_Customers.csv")
+print("Shape:", df.shape)
+print(df.head())
+print("\nMissing values:", df.isnull().sum().sum())
+
+Program section 2:
+print(df.describe().round(2))
+print("\nGenre counts:")
+print(df["Genre"].value_counts())
+
+fig, ax = plt.subplots(1, 3, figsize=(10, 3.2))
+for a, c in zip(ax, ["Age", "Annual Income (k$)", "Spending Score (1-100)"]):
+ sns.histplot(df[c], bins=15, kde=True, ax=a, color="#4c72b0")
+ a.set_title(c, fontsize=9)
+plt.tight_layout(); plt.show()
+
+Program section 3:
+X = df[["Annual Income (k$)", "Spending Score (1-100)"]].values
+
+wcss, sil = [], []
+for k in range(1, 11):
+ km = KMeans(n_clusters=k, init="k-means++", n_init=10, random_state=42).fit(X)
+ wcss.append(km.inertia_)
+ if k > 1:
+     sil.append(silhouette_score(X, km.labels_))
+
+print("k   WCSS         Silhouette")
+for k in range(1, 11):
+ score = "-" if k == 1 else "%.3f" % sil[k - 2]
+ print("%-3d %-12.2f %s" % (k, wcss[k - 1], score))
+
+fig, ax = plt.subplots(1, 2, figsize=(10, 3.6))
+ax[0].plot(range(1, 11), wcss, "o-"); ax[0].axvline(5, ls="--", c="red")
+ax[0].set_title("Elbow Method"); ax[0].set_xlabel("Number of clusters (k)")
+ax[0].set_ylabel("WCSS")
+ax[1].plot(range(2, 11), sil, "s-", c="green")
+ax[1].set_title("Silhouette score"); ax[1].set_xlabel("Number of clusters (k)")
+plt.tight_layout(); plt.show()
+
+Program section 4:
+km = KMeans(n_clusters=5, init="k-means++", n_init=10, random_state=42)
+df["Cluster"] = km.fit_predict(X)
+
+print("Centroids (Income, Score):")
+print(np.round(km.cluster_centers_, 2))
+print("Inertia:", round(km.inertia_, 2), " Iterations:", km.n_iter_,
+   " Silhouette: %.3f" % silhouette_score(X, df["Cluster"]))
+print("\nCustomers per cluster:")
+print(df["Cluster"].value_counts().sort_index())
+
+Program section 5:
+colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
+
+
+              Implementation of K means Clustering in Python with suitable dataset
+
+plt.figure(figsize=(7.5, 5))
+for c in range(5):
+ m = df["Cluster"] == c
+ plt.scatter(X[m, 0], X[m, 1], s=40, c=colors[c], label="Cluster %d" % c,
+             edgecolor="k", linewidth=0.3)
+plt.scatter(km.cluster_centers_[:, 0], km.cluster_centers_[:, 1], s=250, c="yellow",
+         marker="*", edgecolor="k", label="Centroids")
+plt.xlabel("Annual Income (k$)"); plt.ylabel("Spending Score (1-100)")
+plt.title("Customer segments (K-Means, k = 5)"); plt.legend(fontsize=8)
+plt.tight_layout(); plt.show()
+
+
+Cluster profile for targeted marketing
+Code:
+summary = df.groupby("Cluster").agg(Customers=("CustomerID", "count"), Avg_Age=("Age", "mean"),
+                                 Avg_Income=("Annual Income (k$)", "mean"),
+                                 Avg_Score=("Spending Score (1-100)", "mean")).round(1)
+print(summary)
+
+Program section 6:
+summary = df.groupby("Cluster").agg(Customers=("CustomerID", "count"), Avg_Age=("Age", "mean"),
+                                 Avg_Income=("Annual Income (k$)", "mean"),
+                                 Avg_Score=("Spending Score (1-100)", "mean")).round(1)
+print(summary)
+
+Program section 7:
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import adjusted_rand_score
+
+Xs = StandardScaler().fit_transform(X)
+km_scaled = KMeans(n_clusters=5, n_init=10, random_state=42).fit(Xs)
+ari = adjusted_rand_score(df["Cluster"], km_scaled.labels_)
+print("Agreement between raw and scaled clustering (ARI): %.3f" % ari)
+
+print("New customer (income 70k$, score 80) -> cluster", km.predict([[70, 80]])[0])
+print("New customer (income 20k$, score 10) -> cluster", km.predict([[20, 10]])[0])
+
+
+EXPERIMENT 10
+========================================
+
+Program section 1:
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
+from sklearn.metrics import (accuracy_score, confusion_matrix, classification_report,
+                          ConfusionMatrixDisplay)
+pd.set_option("display.width", 85)
+
+iris = load_iris(as_frame=True)
+X, y = iris.data, iris.target
+print("Shape:", X.shape, " Classes:", iris.target_names.tolist())
+print(X.head())
+print("\nClass counts:", y.value_counts().sort_index().to_dict())
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25,
+                                                 random_state=0, stratify=y)
+print("Train:", X_train.shape, " Test:", X_test.shape)
+
+Program section 2:
+dt = DecisionTreeClassifier(criterion="entropy", max_depth=3, random_state=0)
+dt.fit(X_train, y_train)
+pred = dt.predict(X_test)
+
+print("Train accuracy: %.4f   Test accuracy: %.4f" %
+   (dt.score(X_train, y_train), accuracy_score(y_test, pred)))
+print("\nConfusion matrix:")
+print(confusion_matrix(y_test, pred))
+print("\nClassification report:")
+print(classification_report(y_test, pred, target_names=iris.target_names))
+
+Program section 3:
+print(export_text(dt, feature_names=list(X.columns)))
+
+plt.figure(figsize=(11, 5.5))
+plot_tree(dt, feature_names=X.columns, class_names=iris.target_names, filled=True, fontsize=8)
+plt.title("Decision tree (criterion = entropy, max_depth = 3)")
+plt.tight_layout(); plt.show()
+
+Program section 4:
+for c in ["gini", "entropy"]:
+ m = DecisionTreeClassifier(criterion=c, random_state=0).fit(X_train, y_train)
+ print("%-8s depth=%d leaves=%d test accuracy=%.4f" %
+       (c, m.get_depth(), m.get_n_leaves(), m.score(X_test, y_test)))
+
+Program section 5:
+depths = range(1, 11)
+train_acc, test_acc = [], []
+for d in depths:
+ m = DecisionTreeClassifier(max_depth=d, random_state=0).fit(X_train, y_train)
+ train_acc.append(m.score(X_train, y_train))
+ test_acc.append(m.score(X_test, y_test))
+
+print("Depth Train    Test")
+for d, a, b in zip(depths, train_acc, test_acc):
+ print("%-6d %.4f %.4f" % (d, a, b))
+
+plt.figure(figsize=(6.5, 3.8))
+plt.plot(depths, train_acc, "o-", label="Train")
+
+
+                   Implementation of decision tree classifier using python with suitable dataset
+
+plt.plot(depths, test_acc, "s-", label="Test")
+plt.xlabel("max_depth"); plt.ylabel("Accuracy"); plt.title("Accuracy vs max_depth")
+plt.legend(); plt.grid(alpha=.3)
+plt.tight_layout(); plt.show()
+
+Program section 6:
+from sklearn.linear_model import LogisticRegression
+
+t = pd.read_csv("Titanic-Dataset.csv")[["Survived", "Pclass", "Sex", "Age"]]
+t["Age"] = t["Age"].fillna(t["Age"].median())
+t["Sex"] = t["Sex"].map({"male": 0, "female": 1})
+Xt, yt = t[["Sex", "Age", "Pclass"]], t["Survived"]
+Xtr, Xte, ytr, yte = train_test_split(Xt, yt, test_size=0.2, random_state=0)
+
+dtc = DecisionTreeClassifier(criterion="gini", max_depth=3, random_state=0).fit(Xtr, ytr)
+lr = LogisticRegression(max_iter=1000).fit(Xtr, ytr)
+print("Decision tree accuracy      :", round(dtc.score(Xte, yte), 4))
+print("Logistic regression accuracy:", round(lr.score(Xte, yte), 4))
+
+
+                   Implementation of decision tree classifier using python with suitable dataset
+
+Program section 7:
+for name, value in sorted(zip(X.columns, dt.feature_importances_), key=lambda t: -t[1]):
+ print(" %-20s %.4f" % (name, value))
+
+Program section 8:
+ConfusionMatrixDisplay.from_predictions(y_test, pred, display_labels=iris.target_names,
+                                     cmap="Blues")
+plt.title("Confusion matrix - Iris test set")
+plt.tight_layout(); plt.show()
+
+
+Prediction for new flowers
+Code:
+new = pd.DataFrame([[5.1, 3.5, 1.4, 0.2], [6.7, 3.0, 5.2, 2.3]], columns=X.columns)
+for row, label in zip(new.values, dt.predict(new)):
+ print(row, "->", iris.target_names[label])
+
+Program section 9:
+new = pd.DataFrame([[5.1, 3.5, 1.4, 0.2], [6.7, 3.0, 5.2, 2.3]], columns=X.columns)
+for row, label in zip(new.values, dt.predict(new)):
+ print(row, "->", iris.target_names[label])
+
+
+EXPERIMENT 11
+========================================
+
+Program section 1:
+import numpy as np
+  import matplotlib.pyplot as plt
+  from sklearn.neural_network import MLPClassifier
+  from sklearn.linear_model import Perceptron
+
+  X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+  y_and = np.array([0, 0, 0, 1])
+  y_nand = np.array([1, 1, 1, 0])
+
+  print("A B | AND NAND")
+  for (a, b), t1, t2 in zip(X, y_and, y_nand):
+   print(a, b, "|", t1, " ", t2)
+
+Program section 2:
+class SimplePerceptron:
+   """Single neuron with a step activation, trained with the perceptron learning rule."""
+   def __init__(self, lr=0.1, epochs=100):
+       self.lr = lr
+       self.epochs = epochs
+
+   def step(self, z):
+       return np.where(z >= 0, 1, 0)
+
+   def predict(self, X):
+       return self.step(X @ self.w + self.b)
+
+   def fit(self, X, y, verbose=True):
+       self.w = np.zeros(X.shape[1])
+       self.b = 0.0
+       for epoch in range(1, self.epochs + 1):
+           errors = 0
+           for xi, target in zip(X, y):
+               out = self.step(xi @ self.w + self.b)
+               update = self.lr * (target - out)
+               self.w = self.w + update * xi
+               self.b = self.b + update
+               errors += int(update != 0)
+           if verbose:
+
+
+                   Roll No:
+PROBLEM               Implementation of AND/NAND gate using feed forward Neural Network
+                print("Epoch", epoch, "-> errors:", errors, " w =", self.w.round(2), " b =", round(self.b,
+ 2))
+            if errors == 0:
+                print("Converged after", epoch, "epochs")
+                break
+        return self
+
+
+ def verify(model, X, y, name):
+  pred = model.predict(X)
+  print(name, "- truth table verification")
+  print("A B | Expected | Predicted | Result")
+  for (a, b), t, p in zip(X, y, pred):
+      print(a, b, "|    ", t, "   |    ", p, "             |", "Correct" if t == p else "WRONG")
+  print("Accuracy:", (pred == y).mean())
+
+Program section 3:
+and_model = SimplePerceptron(lr=0.1, epochs=50)
+ and_model.fit(X, y_and)
+ print("\nFinal weights:", and_model.w.round(2), " bias:", round(and_model.b, 2), "\n")
+ verify(and_model, X, y_and, "AND")
+
+Program section 4:
+nand_model = SimplePerceptron(lr=0.1, epochs=50)
+ nand_model.fit(X, y_nand)
+ print("\nFinal weights:", nand_model.w.round(2), " bias:", round(nand_model.b, 2), "\n")
+ verify(nand_model, X, y_nand, "NAND")
+
+Program section 5:
+for name, target in [("AND", y_and), ("NAND", y_nand)]:
+  mlp = MLPClassifier(hidden_layer_sizes=(4,), activation="logistic", solver="lbfgs",
+                      max_iter=1000, random_state=1)
+  mlp.fit(X, target)
+  print(name, "gate: iterations =", mlp.n_iter_, " final loss =", round(mlp.loss_, 4))
+  print("Probability of output 1:", mlp.predict_proba(X)[:, 1].round(3))
+  verify(mlp, X, target, name)
+  print()
+
+Program section 6:
+for name, target in [("AND", y_and), ("NAND", y_nand)]:
+
+
+                   Roll No:
+PROBLEM               Implementation of AND/NAND gate using feed forward Neural Network
+  p = Perceptron(max_iter=1000, tol=None, random_state=0).fit(X, target)
+  print(name, "-> accuracy:", p.score(X, target), " weights:", p.coef_[0], " bias:", p.intercept_[0])
+
+Program section 7:
+fig, ax = plt.subplots(1, 2, figsize=(9, 4))
+ for a, name, model, target in [(ax[0], "AND", and_model, y_and), (ax[1], "NAND", nand_model, y_nand)]:
+  a.scatter(X[target == 0, 0], X[target == 0, 1], s=140, color="tab:red", label="output 0")
+  a.scatter(X[target == 1, 0], X[target == 1, 1], s=140, color="tab:green", label="output 1")
+  xs = np.linspace(-0.5, 1.5, 50)
+  ys = -(model.w[0] * xs + model.b) / model.w[1]
+  a.plot(xs, ys, "k--", label="decision line")
+  a.set_xlim(-0.5, 1.5)
+  a.set_ylim(-0.5, 1.5)
+  a.set_title(name + " gate")
+  a.set_xlabel("Input A")
+  a.set_ylabel("Input B")
+  a.legend(loc="upper right", fontsize=8)
+ plt.tight_layout()
+ plt.show()
+
+
+EXPERIMENT 12
+========================================
+
+Program section 1:
+import numpy as np
+  import matplotlib.pyplot as plt
+  from sklearn.neural_network import MLPClassifier
+  from sklearn.linear_model import Perceptron
+
+  X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+  y_or = np.array([0, 1, 1, 1])
+  y_nor = np.array([1, 0, 0, 0])
+
+  print("A B | OR NOR")
+  for (a, b), t1, t2 in zip(X, y_or, y_nor):
+   print(a, b, "|", t1, " ", t2)
+
+Program section 2:
+class SimplePerceptron:
+   """Single neuron with a step activation, trained with the perceptron learning rule."""
+   def __init__(self, lr=0.1, epochs=100):
+       self.lr = lr
+       self.epochs = epochs
+
+   def step(self, z):
+       return np.where(z >= 0, 1, 0)
+
+   def predict(self, X):
+       return self.step(X @ self.w + self.b)
+
+   def fit(self, X, y, verbose=True):
+       self.w = np.zeros(X.shape[1])
+       self.b = 0.0
+       for epoch in range(1, self.epochs + 1):
+           errors = 0
+           for xi, target in zip(X, y):
+               out = self.step(xi @ self.w + self.b)
+               update = self.lr * (target - out)
+               self.w = self.w + update * xi
+               self.b = self.b + update
+               errors += int(update != 0)
+           if verbose:
+
+
+                   Roll No:
+PROBLEM               Implementation of OR/NOR gate using feed forward Neural Network
+                print("Epoch", epoch, "-> errors:", errors, " w =", self.w.round(2), " b =", round(self.b,
+ 2))
+            if errors == 0:
+                print("Converged after", epoch, "epochs")
+                break
+        return self
+
+
+ def verify(model, X, y, name):
+  pred = model.predict(X)
+  print(name, "- truth table verification")
+  print("A B | Expected | Predicted | Result")
+  for (a, b), t, p in zip(X, y, pred):
+      print(a, b, "|    ", t, "   |    ", p, "             |", "Correct" if t == p else "WRONG")
+  print("Accuracy:", (pred == y).mean())
+
+Program section 3:
+or_model = SimplePerceptron(lr=0.1, epochs=50)
+ or_model.fit(X, y_or)
+ print("\nFinal weights:", or_model.w.round(2), " bias:", round(or_model.b, 2), "\n")
+ verify(or_model, X, y_or, "OR")
+
+Program section 4:
+nor_model = SimplePerceptron(lr=0.1, epochs=50)
+ nor_model.fit(X, y_nor)
+ print("\nFinal weights:", nor_model.w.round(2), " bias:", round(nor_model.b, 2), "\n")
+ verify(nor_model, X, y_nor, "NOR")
+
+Program section 5:
+for name, target in [("OR", y_or), ("NOR", y_nor)]:
+  mlp = MLPClassifier(hidden_layer_sizes=(4,), activation="logistic", solver="lbfgs",
+                      max_iter=1000, random_state=1)
+  mlp.fit(X, target)
+  print(name, "gate: iterations =", mlp.n_iter_, " final loss =", round(mlp.loss_, 4))
+  print("Probability of output 1:", mlp.predict_proba(X)[:, 1].round(3))
+  verify(mlp, X, target, name)
+  print()
+
+Program section 6:
+for name, target in [("OR", y_or), ("NOR", y_nor)]:
+  p = Perceptron(max_iter=1000, tol=None, random_state=0).fit(X, target)
+  print(name, "-> accuracy:", p.score(X, target), " weights:", p.coef_[0], " bias:", p.intercept_[0])
+
+Program section 7:
+fig, ax = plt.subplots(1, 2, figsize=(9, 4))
+ for a, name, model, target in [(ax[0], "OR", or_model, y_or), (ax[1], "NOR", nor_model, y_nor)]:
+  a.scatter(X[target == 0, 0], X[target == 0, 1], s=140, color="tab:red", label="output 0")
+  a.scatter(X[target == 1, 0], X[target == 1, 1], s=140, color="tab:green", label="output 1")
+  xs = np.linspace(-0.5, 1.5, 50)
+  ys = -(model.w[0] * xs + model.b) / model.w[1]
+  a.plot(xs, ys, "k--", label="decision line")
+  a.set_xlim(-0.5, 1.5)
+  a.set_ylim(-0.5, 1.5)
+  a.set_title(name + " gate")
+  a.set_xlabel("Input A")
+  a.set_ylabel("Input B")
+  a.legend(loc="upper right", fontsize=8)
+ plt.tight_layout()
+ plt.show()
+
+
+EXPERIMENT 13
+========================================
+
+Program section 1:
+import numpy as np
+  import matplotlib.pyplot as plt
+  from sklearn.neural_network import MLPClassifier
+  from sklearn.linear_model import Perceptron
+
+  X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+  y_xor = np.array([0, 1, 1, 0])
+
+  print("A B | XOR")
+  for (a, b), t in zip(X, y_xor):
+   print(a, b, "|", t)
+
+Program section 2:
+class SimplePerceptron:
+   """Single neuron with a step activation, trained with the perceptron learning rule."""
+   def __init__(self, lr=0.1, epochs=100):
+       self.lr = lr
+       self.epochs = epochs
+
+   def step(self, z):
+       return np.where(z >= 0, 1, 0)
+
+   def predict(self, X):
+       return self.step(X @ self.w + self.b)
+
+   def fit(self, X, y):
+       self.w = np.zeros(X.shape[1])
+       self.b = 0.0
+       self.history = []
+       for epoch in range(self.epochs):
+           errors = 0
+           for xi, target in zip(X, y):
+               out = self.step(xi @ self.w + self.b)
+               update = self.lr * (target - out)
+               self.w = self.w + update * xi
+               self.b = self.b + update
+
+
+                    Roll No:
+PROBLEM                Implementation of EX-OR gate using feed forward Neural Network
+                errors += int(update != 0)
+            self.history.append(errors)
+            if errors == 0:
+                break
+        return self
+
+ def verify(model, X, y, name):
+  pred = model.predict(X)
+  print(name, "- truth table verification")
+  print("A B | Expected | Predicted | Result")
+  for (a, b), t, p in zip(X, y, pred):
+      print(a, b, "|    ", t, "   |    ", p, "               |", "Correct" if t == p else "WRONG")
+  print("Accuracy:", (pred == y).mean())
+
+Program section 3:
+single = SimplePerceptron(lr=0.1, epochs=100).fit(X, y_xor)
+ print("Errors in each of the first 12 epochs:", single.history[:12])
+ print("Epochs run:", len(single.history), " errors in the last epoch:", single.history[-1])
+ print("Weights:", single.w.round(2), " bias:", round(single.b, 2), "\n")
+ verify(single, X, y_xor, "XOR (single neuron)")
+
+ p = Perceptron(max_iter=1000, tol=None, random_state=0).fit(X, y_xor)
+ print("\nscikit-learn Perceptron accuracy on XOR:", p.score(X, y_xor))
+
+Program section 4:
+def step(z):
+  return (z >= 0).astype(int)
+
+ W1 = np.array([[1, -1],
+             [1, -1]])                # column 1 -> OR neuron, column 2 -> NAND neuron
+ b1 = np.array([-0.5, 1.5])
+ W2 = np.array([1, 1])                   # output neuron acts as AND
+ b2 = -1.5
+
+
+                 Roll No:
+PROBLEM             Implementation of EX-OR gate using feed forward Neural Network
+ hidden = step(X @ W1 + b1)
+ output = step(hidden @ W2 + b2)
+ print("A B | OR NAND | XOR (output)")
+ for (a, b), h, o in zip(X, hidden, output):
+  print(a, b, "|", h[0], " ", h[1], " |", o)
+ print("Matches XOR truth table:", (output == y_xor).all())
+
+Program section 5:
+def sigmoid(z):
+  return 1 / (1 + np.exp(-z))
+
+ rng = np.random.default_rng(0)
+ hidden_units, lr = 4, 0.5
+ W1 = rng.normal(0, 1, (2, hidden_units)); b1 = np.zeros(hidden_units)
+ W2 = rng.normal(0, 1, (hidden_units, 1)); b2 = np.zeros(1)
+ t = y_xor.reshape(-1, 1)
+ loss_history = []
+
+ for epoch in range(10001):
+  a1 = sigmoid(X @ W1 + b1)                 # forward pass: hidden layer
+  a2 = sigmoid(a1 @ W2 + b2)                # forward pass: output layer
+  loss = np.mean((t - a2) ** 2)
+  loss_history.append(loss)
+  d2 = (a2 - t) * a2 * (1 - a2)             # backward pass: output error
+  d1 = (d2 @ W2.T) * a1 * (1 - a1)          # backward pass: hidden error
+  W2 -= lr * a1.T @ d2; b2 -= lr * d2.sum(axis=0)
+  W1 -= lr * X.T @ d1; b1 -= lr * d1.sum(axis=0)
+  if epoch % 2000 == 0:
+      print("Epoch", epoch, " loss =", round(loss, 5))
+
+ print("\nOutputs after training:", a2.ravel().round(3))
+ pred = (a2 > 0.5).astype(int).ravel()
+ print("A B | Expected | Network output | Result")
+ for (a, b), e, o, p_ in zip(X, y_xor, a2.ravel(), pred):
+  print(a, b, "|    ", e, "   |     ", round(o, 3), "             |", "Correct" if e == p_ else "WRONG")
+ print("Accuracy:", (pred == y_xor).mean())
+
+Program section 6:
+for hidden in [(2,), (4,)]:
+  mlp = MLPClassifier(hidden_layer_sizes=hidden, activation="logistic", solver="lbfgs",
+                      max_iter=2000, random_state=1)
+  mlp.fit(X, y_xor)
+  print("Hidden neurons:", hidden[0], " iterations:", mlp.n_iter_, " loss:", round(mlp.loss_, 4),
+        " accuracy:", mlp.score(X, y_xor))
+
+ best = MLPClassifier(hidden_layer_sizes=(4,), activation="logistic", solver="lbfgs",
+                   max_iter=2000, random_state=1).fit(X, y_xor)
+ print("\nProbability of output 1:", best.predict_proba(X)[:, 1].round(3))
+ verify(best, X, y_xor, "XOR (MLP, 4 hidden neurons)")
+
+Program section 7:
+fig, ax = plt.subplots(1, 3, figsize=(14, 4))
+ ax[0].plot(loss_history)
+ ax[0].set_title("Training loss (backpropagation)")
+ ax[0].set_xlabel("Epoch")
+ ax[0].set_ylabel("Mean squared error")
+
+ xx, yy = np.meshgrid(np.linspace(-0.5, 1.5, 200), np.linspace(-0.5, 1.5, 200))
+ grid = np.c_[xx.ravel(), yy.ravel()]
+ for a, model, title in [(ax[1], single, "Single neuron (fails)"), (ax[2], best, "MLP with hidden layer")]:
+  zz = model.predict(grid).reshape(xx.shape)
+  a.contourf(xx, yy, zz, alpha=0.3, cmap="RdYlGn", levels=[-0.5, 0.5, 1.5])
+
+
+                     Roll No:
+PROBLEM                 Implementation of EX-OR gate using feed forward Neural Network
+  a.scatter(X[y_xor == 0, 0], X[y_xor == 0, 1], s=140, color="tab:red", label="output 0")
+  a.scatter(X[y_xor == 1, 0], X[y_xor == 1, 1], s=140, color="tab:green", label="output 1")
+  a.set_title(title)
+  a.set_xlabel("Input A")
+  a.set_ylabel("Input B")
+ ax[1].legend(loc="upper right", fontsize=8)
+ plt.tight_layout()
+ plt.show()
+
+
